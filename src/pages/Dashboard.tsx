@@ -7,7 +7,7 @@ import { storage } from '@/lib/storage';
 import { adicionarContasExemplo } from '@/lib/sample-data';
 import { getCurrentMonth, getPreviousMonth, isDateInMonth, formatCurrency } from '@/lib/date-utils';
 import { Conta, ResumoMensal } from '@/types/conta';
-import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp, Repeat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
@@ -198,6 +198,13 @@ const Dashboard = () => {
                 <Button className="w-full bg-gradient-primary hover:opacity-90 justify-start">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Conta
+                </Button>
+              </Link>
+              
+              <Link to="/contas-fixas" className="block">
+                <Button variant="outline" className="w-full justify-start">
+                  <Repeat className="h-4 w-4 mr-2" />
+                  Contas Fixas
                 </Button>
               </Link>
               

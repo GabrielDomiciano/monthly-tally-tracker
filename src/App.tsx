@@ -7,6 +7,7 @@ import Navigation from "./components/Navigation";
 import Dashboard from "./pages/Dashboard";
 import ContasPage from "./pages/ContasPage";
 import HistoricoPage from "./pages/HistoricoPage";
+import ContasFixasPage from "./pages/ContasFixasPage";
 import GraficosPage from "./pages/GraficosPage";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/contas" element={<ContasPage />} />
+            <Route path="/contas-fixas" element={<ContasFixasPage />} />
             <Route path="/historico" element={<HistoricoPage />} />
             <Route path="/graficos" element={<GraficosPage />} />
             <Route path="*" element={<NotFound />} />

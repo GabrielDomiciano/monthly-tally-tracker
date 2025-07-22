@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Home, History, BarChart3, Plus, Wallet } from 'lucide-react';
+import { Home, History, BarChart3, Plus, Wallet, Repeat } from 'lucide-react';
 
 const Navigation = () => {
   const location = useLocation();
@@ -8,6 +8,7 @@ const Navigation = () => {
   const navItems = [
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/contas', label: 'Nova Conta', icon: Plus },
+    { path: '/contas-fixas', label: 'Contas Fixas', icon: Repeat },
     { path: '/historico', label: 'Histórico', icon: History },
     { path: '/graficos', label: 'Gráficos', icon: BarChart3 },
   ];
