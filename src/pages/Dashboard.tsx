@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ResumoCard from '@/components/ResumoCard';
 import ContaCard from '@/components/ContaCard';
+import PrimeiroUso from '@/components/PrimeiroUso';
+import ConfiguracoesDados from '@/components/ConfiguracoesDados';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { adicionarContasExemplo } from '@/lib/sample-data';
 import { getCurrentMonth, getPreviousMonth, isDateInMonth, formatCurrency } from '@/lib/date-utils';
 import { Conta, ResumoMensal } from '@/types/conta';
-import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp, Repeat } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp, Repeat, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [contas, setContas] = useState<Conta[]>([]);
+  const [showConfig, setShowConfig] = useState(false);
   const [resumoAtual, setResumoAtual] = useState<ResumoMensal>({
     total: 0,
     pago: 0,
@@ -31,9 +34,6 @@ const Dashboard = () => {
   }, []);
 
   const carregarDados = () => {
-    // Adicionar dados de exemplo se não houver contas
-    adicionarContasExemplo();
-    
     const todasContas = storage.getContas();
     const mesAtual = getCurrentMonth();
     const mesAnterior = getPreviousMonth();
@@ -99,6 +99,30 @@ const Dashboard = () => {
     };
   };
 
+  const adicionarDadosExemplo = () => {
+    adicionarContasExemplo();
+    carregarDados();
+    toast({
+      title: "Dados de exemplo adicionados",
+      description: "Agora você pode explorar o sistema com dados de exemplo",
+    });
+  };
+
+  const temDados = () => {
+    const todasContas = storage.getContas();
+    const contasFixas = storage.getContasFixas();
+    return todasContas.length > 0 || contasFixas.length > 0;
+  };
+
+  // Se não tem dados, mostra tela de primeiro uso
+  if (!temDados()) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <PrimeiroUso onAddSampleData={adicionarDadosExemplo} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 space-y-6">
       <div className="max-w-7xl mx-auto">
@@ -108,13 +132,30 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
             <p className="text-muted-foreground">Visão geral das suas contas mensais</p>
           </div>
-          <Link to="/contas">
-            <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-glow">
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Conta
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfig(!showConfig)}
+              size="sm"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Configurar
             </Button>
-          </Link>
+            <Link to="/contas">
+              <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-glow">
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Conta
+              </Button>
+            </Link>
+          </div>
         </div>
+
+        {/* Configurações de Dados */}
+        {showConfig && (
+          <div className="mb-8">
+            <ConfiguracoesDados onDataChange={carregarDados} />
+          </div>
+        )}
 
         {/* Cards de Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

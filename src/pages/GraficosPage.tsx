@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { storage } from '@/lib/storage';
 import { Conta } from '@/types/conta';
 import { formatCurrency } from '@/lib/date-utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { TrendingUp, PieChart as PieChartIcon, BarChart3, Calendar } from 'lucide-react';
+import { TrendingUp, PieChart as PieChartIcon, BarChart3, Calendar, Plus, Repeat } from 'lucide-react';
 
 interface DadosGrafico {
   categorias: Array<{ name: string; value: number; fill: string }>;
@@ -349,7 +350,26 @@ const GraficosPage = () => {
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                Nenhum dado disponível
+                <div className="text-center">
+                  <p className="text-lg mb-2">Nenhum dado para exibir</p>
+                  <p className="mb-4">Cadastre algumas contas para ver os gráficos aqui</p>
+                  <div className="space-y-2">
+                    <Link to="/contas-fixas">
+                      <Button className="bg-gradient-primary hover:opacity-90">
+                        <Repeat className="h-4 w-4 mr-2" />
+                        Configurar Contas Fixas
+                      </Button>
+                    </Link>
+                    <div>
+                      <Link to="/contas">
+                        <Button variant="outline">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Nova Conta Avulsa
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

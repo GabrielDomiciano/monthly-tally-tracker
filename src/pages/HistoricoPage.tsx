@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ContaCard from '@/components/ContaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { storage } from '@/lib/storage';
 import { Conta, CATEGORIAS } from '@/types/conta';
 import { formatCurrency, formatDate } from '@/lib/date-utils';
-import { Search, Filter, Calendar, DollarSign } from 'lucide-react';
+import { Search, Filter, Calendar, DollarSign, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const HistoricoPage = () => {
@@ -261,6 +262,16 @@ const HistoricoPage = () => {
                   <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma conta encontrada</p>
                   <p className="text-sm">Tente ajustar os filtros ou adicionar novas contas</p>
+                  {contas.length === 0 && (
+                    <div className="mt-4">
+                      <Link to="/contas">
+                        <Button className="bg-gradient-primary hover:opacity-90">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Cadastrar primeira conta
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
