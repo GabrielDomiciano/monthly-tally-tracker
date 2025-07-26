@@ -57,7 +57,7 @@ const GraficosPage = () => {
     let contasFiltradas = contas;
 
     // Aplicar filtro de mês se selecionado
-    if (filtroMes) {
+    if (filtroMes && filtroMes !== 'todos') {
       contasFiltradas = contas.filter(conta => {
         const data = new Date(conta.data);
         const contaMes = `${data.getFullYear()}-${(data.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -154,7 +154,7 @@ const GraficosPage = () => {
                 <SelectValue placeholder="Todos os meses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os meses</SelectItem>
+                <SelectItem value="todos">Todos os meses</SelectItem>
                 {mesesDisponiveis.map(mes => (
                   <SelectItem key={mes} value={mes}>
                     {formatarMes(mes)}
@@ -163,7 +163,7 @@ const GraficosPage = () => {
               </SelectContent>
             </Select>
             {filtroMes && (
-              <Button variant="outline" size="sm" onClick={() => setFiltroMes('')}>
+              <Button variant="outline" size="sm" onClick={() => setFiltroMes('todos')}>
                 Limpar
               </Button>
             )}

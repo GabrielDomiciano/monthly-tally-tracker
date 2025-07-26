@@ -51,12 +51,12 @@ const HistoricoPage = () => {
     }
 
     // Filtro por categoria
-    if (filtros.categoria) {
+    if (filtros.categoria && filtros.categoria !== 'todas') {
       resultado = resultado.filter(conta => conta.categoria === filtros.categoria);
     }
 
     // Filtro por status
-    if (filtros.status) {
+    if (filtros.status && filtros.status !== 'todos') {
       resultado = resultado.filter(conta => conta.status === filtros.status);
     }
 
@@ -102,8 +102,8 @@ const HistoricoPage = () => {
   const limparFiltros = () => {
     setFiltros({
       busca: '',
-      categoria: '',
-      status: '',
+      categoria: 'todas',
+      status: 'todos',
       mes: ''
     });
   };
@@ -203,7 +203,7 @@ const HistoricoPage = () => {
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas categorias</SelectItem>
+                  <SelectItem value="todas">Todas categorias</SelectItem>
                   {CATEGORIAS.map(categoria => (
                     <SelectItem key={categoria} value={categoria}>
                       {categoria}
@@ -220,7 +220,7 @@ const HistoricoPage = () => {
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos status</SelectItem>
+                  <SelectItem value="todos">Todos status</SelectItem>
                   <SelectItem value="pago">Pago</SelectItem>
                   <SelectItem value="pendente">Pendente</SelectItem>
                 </SelectContent>
