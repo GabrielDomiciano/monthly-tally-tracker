@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contas: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          id: string
+          status: string
+          titulo: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data: string
+          id?: string
+          status: string
+          titulo: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          id?: string
+          status?: string
+          titulo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      contas_fixas: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          dia_vencimento: number
+          id: string
+          titulo: string
+          updated_at: string
+          valor_padrao: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          created_at?: string
+          dia_vencimento: number
+          id?: string
+          titulo: string
+          updated_at?: string
+          valor_padrao: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          dia_vencimento?: number
+          id?: string
+          titulo?: string
+          updated_at?: string
+          valor_padrao?: number
+        }
+        Relationships: []
+      }
+      geracoes_mensais: {
+        Row: {
+          conta_fixa_id: string
+          created_at: string
+          id: string
+          ja_gerada: boolean
+          mes: string
+          valor: number
+        }
+        Insert: {
+          conta_fixa_id: string
+          created_at?: string
+          id?: string
+          ja_gerada?: boolean
+          mes: string
+          valor: number
+        }
+        Update: {
+          conta_fixa_id?: string
+          created_at?: string
+          id?: string
+          ja_gerada?: boolean
+          mes?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geracoes_mensais_conta_fixa_id_fkey"
+            columns: ["conta_fixa_id"]
+            isOneToOne: false
+            referencedRelation: "contas_fixas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
