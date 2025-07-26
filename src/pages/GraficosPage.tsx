@@ -38,8 +38,8 @@ const GraficosPage = () => {
     processarDadosGrafico();
   }, [contas, filtroMes]);
 
-  const carregarDados = () => {
-    const todasContas = storage.getContas();
+  const carregarDados = async () => {
+    const todasContas = await storage.getContas();
     setContas(todasContas);
 
     // Extrair meses únicos

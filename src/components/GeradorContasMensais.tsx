@@ -29,14 +29,16 @@ const GeradorContasMensais = () => {
     carregarContasFixas(mesAtual);
   }, []);
 
-  const carregarContasFixas = (mes: string) => {
-    const contasFixasBase = storage.getContasFixas().filter(cf => cf.ativo);
+  const carregarContasFixas = async (mes: string) => {
+    const contasFixasBase = (await storage.getContasFixas()).filter(cf => cf.ativo);
     
-    const contasParaGerar: ContaParaGerar[] = contasFixasBase.map(conta => ({
-      ...conta,
-      valorAjustado: conta.valorPadrao,
-      jaGerada: storage.jaGeradoNoMes(conta.id, mes)
-    }));
+    const contasParaGerar: ContaParaGerar[] = await Promise.all(
+      contasFixasBase.map(async conta => ({
+        ...conta,
+        valorAjustado: conta.valorPadrao,
+        jaGerada: await storage.jaGeradoNoMes(conta.id, mes)
+      }))
+    );
 
     setContasFixas(contasParaGerar);
   };
@@ -47,7 +49,7 @@ const GeradorContasMensais = () => {
     ));
   };
 
-  const gerarContasDoMes = () => {
+  const gerarContasDoMes = async () => {
     if (!mesGeracao) {
       toast({
         title: "Erro",
@@ -70,13 +72,13 @@ const GeradorContasMensais = () => {
 
     let contasGeradas = 0;
 
-    contasNaoGeradas.forEach(contaFixa => {
+    for (const contaFixa of contasNaoGeradas) {
       const [ano, mes] = mesGeracao.split('-');
       const diaVencimento = Math.min(contaFixa.diaVencimento, new Date(parseInt(ano), parseInt(mes), 0).getDate());
       const dataVencimento = `${ano}-${mes}-${diaVencimento.toString().padStart(2, '0')}`;
 
       // Adicionar a conta regular
-      storage.addConta({
+      await storage.addConta({
         titulo: contaFixa.titulo,
         valor: contaFixa.valorAjustado,
         data: dataVencimento,
@@ -85,9 +87,9 @@ const GeradorContasMensais = () => {
       });
 
       // Marcar como gerada
-      storage.marcarComoGerado(contaFixa.id, mesGeracao, contaFixa.valorAjustado);
+      await storage.marcarComoGerado(contaFixa.id, mesGeracao, contaFixa.valorAjustado);
       contasGeradas++;
-    });
+    }
 
     toast({
       title: "Contas geradas!",
@@ -95,7 +97,7 @@ const GeradorContasMensais = () => {
     });
 
     // Recarregar para atualizar status
-    carregarContasFixas(mesGeracao);
+    await carregarContasFixas(mesGeracao);
   };
 
   const handleMesChange = (novoMes: string) => {

@@ -10,16 +10,16 @@ const ContasPage = () => {
   const { toast } = useToast();
   const [editingConta, setEditingConta] = useState<Conta | null>(null);
 
-  const handleSubmit = (contaData: Omit<Conta, 'id'>) => {
+  const handleSubmit = async (contaData: Omit<Conta, 'id'>) => {
     try {
       if (editingConta) {
-        storage.updateConta(editingConta.id, contaData);
+        await storage.updateConta(editingConta.id, contaData);
         toast({
           title: "Conta atualizada",
           description: "A conta foi atualizada com sucesso!"
         });
       } else {
-        storage.addConta(contaData);
+        await storage.addConta(contaData);
         toast({
           title: "Conta adicionada",
           description: "Nova conta registrada com sucesso!"

@@ -31,8 +31,8 @@ const HistoricoPage = () => {
     aplicarFiltros();
   }, [contas, filtros]);
 
-  const carregarContas = () => {
-    const todasContas = storage.getContas();
+  const carregarContas = async () => {
+    const todasContas = await storage.getContas();
     // Ordenar por data mais recente
     const contasOrdenadas = todasContas.sort((a, b) => 
       new Date(b.data).getTime() - new Date(a.data).getTime()
@@ -73,12 +73,12 @@ const HistoricoPage = () => {
     setContasFiltradas(resultado);
   };
 
-  const alternarStatus = (id: string) => {
+  const alternarStatus = async (id: string) => {
     const conta = contas.find(c => c.id === id);
     if (conta) {
       const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
-      storage.updateConta(id, { status: novoStatus });
-      carregarContas();
+      await storage.updateConta(id, { status: novoStatus });
+      await carregarContas();
       
       toast({
         title: "Status atualizado",
@@ -87,10 +87,10 @@ const HistoricoPage = () => {
     }
   };
 
-  const excluirConta = (id: string) => {
+  const excluirConta = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta?')) {
-      storage.deleteConta(id);
-      carregarContas();
+      await storage.deleteConta(id);
+      await carregarContas();
       
       toast({
         title: "Conta excluída",

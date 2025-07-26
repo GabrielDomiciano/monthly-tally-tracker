@@ -33,8 +33,8 @@ const Dashboard = () => {
     carregarDados();
   }, []);
 
-  const carregarDados = () => {
-    const todasContas = storage.getContas();
+  const carregarDados = async () => {
+    const todasContas = await storage.getContas();
     const mesAtual = getCurrentMonth();
     const mesAnterior = getPreviousMonth();
 
@@ -73,12 +73,12 @@ const Dashboard = () => {
     });
   };
 
-  const alternarStatus = (id: string) => {
+  const alternarStatus = async (id: string) => {
     const conta = contas.find(c => c.id === id);
     if (conta) {
       const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
-      storage.updateConta(id, { status: novoStatus });
-      carregarDados();
+      await storage.updateConta(id, { status: novoStatus });
+      await carregarDados();
       
       toast({
         title: "Status atualizado",
@@ -99,23 +99,28 @@ const Dashboard = () => {
     };
   };
 
-  const adicionarDadosExemplo = () => {
-    adicionarContasExemplo();
-    carregarDados();
+  const adicionarDadosExemplo = async () => {
+    await adicionarContasExemplo();
+    await carregarDados();
     toast({
       title: "Dados de exemplo adicionados",
       description: "Agora você pode explorar o sistema com dados de exemplo",
     });
   };
 
-  const temDados = () => {
-    const todasContas = storage.getContas();
-    const contasFixas = storage.getContasFixas();
-    return todasContas.length > 0 || contasFixas.length > 0;
-  };
+  const [temDados, setTemDados] = useState(false);
+
+  useEffect(() => {
+    const verificarDados = async () => {
+      const todasContas = await storage.getContas();
+      const contasFixas = await storage.getContasFixas();
+      setTemDados(todasContas.length > 0 || contasFixas.length > 0);
+    };
+    verificarDados();
+  }, []);
 
   // Se não tem dados, mostra tela de primeiro uso
-  if (!temDados()) {
+  if (!temDados) {
     return (
       <div className="min-h-screen bg-background p-4">
         <PrimeiroUso onAddSampleData={adicionarDadosExemplo} />

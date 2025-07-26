@@ -22,28 +22,28 @@ const ContasFixasPage = () => {
     carregarContasFixas();
   }, []);
 
-  const carregarContasFixas = () => {
-    const contas = storage.getContasFixas();
+  const carregarContasFixas = async () => {
+    const contas = await storage.getContasFixas();
     setContasFixas(contas);
   };
 
-  const handleSubmit = (contaData: Omit<ContaFixa, 'id'>) => {
+  const handleSubmit = async (contaData: Omit<ContaFixa, 'id'>) => {
     try {
       if (editingConta) {
-        storage.updateContaFixa(editingConta.id, contaData);
+        await storage.updateContaFixa(editingConta.id, contaData);
         toast({
           title: "Conta fixa atualizada",
           description: "A conta fixa foi atualizada com sucesso!"
         });
       } else {
-        storage.addContaFixa(contaData);
+        await storage.addContaFixa(contaData);
         toast({
           title: "Conta fixa adicionada",
           description: "Nova conta fixa registrada com sucesso!"
         });
       }
       
-      carregarContasFixas();
+      await carregarContasFixas();
       setShowForm(false);
       setEditingConta(null);
     } catch (error) {
@@ -60,10 +60,10 @@ const ContasFixasPage = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta fixa?')) {
-      storage.deleteContaFixa(id);
-      carregarContasFixas();
+      await storage.deleteContaFixa(id);
+      await carregarContasFixas();
       
       toast({
         title: "Conta fixa excluída",
@@ -72,9 +72,9 @@ const ContasFixasPage = () => {
     }
   };
 
-  const toggleAtivo = (id: string, ativo: boolean) => {
-    storage.updateContaFixa(id, { ativo: !ativo });
-    carregarContasFixas();
+  const toggleAtivo = async (id: string, ativo: boolean) => {
+    await storage.updateContaFixa(id, { ativo: !ativo });
+    await carregarContasFixas();
     
     toast({
       title: "Status atualizado",

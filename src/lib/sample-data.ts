@@ -86,22 +86,22 @@ export const contasFixasExemplo: Omit<ContaFixa, 'id'>[] = [
   }
 ];
 
-export const adicionarContasExemplo = () => {
-  const contasExistentes = storage.getContas();
-  const contasFixasExistentes = storage.getContasFixas();
+export const adicionarContasExemplo = async () => {
+  const contasExistentes = await storage.getContas();
+  const contasFixasExistentes = await storage.getContasFixas();
   
   // Só adiciona se não há contas cadastradas
   if (contasExistentes.length === 0) {
-    contasExemplo.forEach(conta => {
-      storage.addConta(conta);
-    });
+    for (const conta of contasExemplo) {
+      await storage.addConta(conta);
+    }
   }
   
   // Adicionar contas fixas de exemplo
   if (contasFixasExistentes.length === 0) {
-    contasFixasExemplo.forEach(contaFixa => {
-      storage.addContaFixa(contaFixa);
-    });
+    for (const contaFixa of contasFixasExemplo) {
+      await storage.addContaFixa(contaFixa);
+    }
   }
   
   return contasExistentes.length === 0 || contasFixasExistentes.length === 0;

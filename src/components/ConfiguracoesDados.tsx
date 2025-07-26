@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -16,21 +16,37 @@ const ConfiguracoesDados = ({ onDataChange }: ConfiguracoesDadosProps) => {
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
-  const limparTodosDados = () => {
-    storage.setContas([]);
-    storage.setContasFixas([]);
-    storage.setGeracoesMensais([]);
-    
-    toast({
-      title: "Dados removidos",
-      description: "Todos os dados foram removidos com sucesso",
-    });
-    
-    onDataChange?.();
+  const limparTodosDados = async () => {
+    try {
+      // Para limpar todos os dados, vamos deletar todas as contas e contas fixas
+      const contas = await storage.getContas();
+      const contasFixas = await storage.getContasFixas();
+      
+      for (const conta of contas) {
+        await storage.deleteConta(conta.id);
+      }
+      
+      for (const contaFixa of contasFixas) {
+        await storage.deleteContaFixa(contaFixa.id);
+      }
+      
+      toast({
+        title: "Dados removidos",
+        description: "Todos os dados foram removidos com sucesso",
+      });
+      
+      onDataChange?.();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao limpar os dados",
+        variant: "destructive"
+      });
+    }
   };
 
-  const adicionarDadosExemplo = () => {
-    const foiAdicionado = adicionarContasExemplo();
+  const adicionarDadosExemplo = async () => {
+    const foiAdicionado = await adicionarContasExemplo();
     
     if (foiAdicionado) {
       toast({
@@ -47,14 +63,14 @@ const ConfiguracoesDados = ({ onDataChange }: ConfiguracoesDadosProps) => {
     }
   };
 
-  const exportarDados = () => {
+  const exportarDados = async () => {
     setIsExporting(true);
     
     try {
       const dados = {
-        contas: storage.getContas(),
-        contasFixas: storage.getContasFixas(),
-        geracoesMensais: storage.getGeracoesMensais(),
+        contas: await storage.getContas(),
+        contasFixas: await storage.getContasFixas(),
+        geracoesMensais: await storage.getGeracoesMensais(),
         exportadoEm: new Date().toISOString()
       };
 
@@ -91,14 +107,25 @@ const ConfiguracoesDados = ({ onDataChange }: ConfiguracoesDadosProps) => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const dados = JSON.parse(e.target?.result as string);
         
         if (dados.contas && dados.contasFixas && dados.geracoesMensais) {
-          storage.setContas(dados.contas);
-          storage.setContasFixas(dados.contasFixas);
-          storage.setGeracoesMensais(dados.geracoesMensais);
+          // Importar contas
+          for (const conta of dados.contas) {
+            await storage.addConta(conta);
+          }
+          
+          // Importar contas fixas  
+          for (const contaFixa of dados.contasFixas) {
+            await storage.addContaFixa(contaFixa);
+          }
+          
+          // Importar gerações mensais
+          for (const geracao of dados.geracoesMensais) {
+            await storage.marcarComoGerado(geracao.contaFixaId, geracao.mes, geracao.valor);
+          }
           
           toast({
             title: "Dados importados",
@@ -122,20 +149,29 @@ const ConfiguracoesDados = ({ onDataChange }: ConfiguracoesDadosProps) => {
     event.target.value = '';
   };
 
-  const obterEstatisticas = () => {
-    const contas = storage.getContas();
-    const contasFixas = storage.getContasFixas();
-    const geracoes = storage.getGeracoesMensais();
-    
-    return {
-      totalContas: contas.length,
-      totalContasFixas: contasFixas.length,
-      totalGeracoes: geracoes.length,
-      valorTotal: contas.reduce((sum, conta) => sum + conta.valor, 0)
-    };
-  };
+  const [stats, setStats] = useState({
+    totalContas: 0,
+    totalContasFixas: 0,
+    totalGeracoes: 0,
+    valorTotal: 0
+  });
 
-  const stats = obterEstatisticas();
+  useEffect(() => {
+    const obterEstatisticas = async () => {
+      const contas = await storage.getContas();
+      const contasFixas = await storage.getContasFixas();
+      const geracoes = await storage.getGeracoesMensais();
+      
+      setStats({
+        totalContas: contas.length,
+        totalContasFixas: contasFixas.length,
+        totalGeracoes: geracoes.length,
+        valorTotal: contas.reduce((sum, conta) => sum + conta.valor, 0)
+      });
+    };
+    
+    obterEstatisticas();
+  }, []);
 
   return (
     <Card>
