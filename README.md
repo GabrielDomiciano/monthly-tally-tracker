@@ -1,73 +1,180 @@
-# Welcome to your Lovable project
+# Controle Financeiro - Sistema de Gestão de Contas Mensais
 
-## Project info
+## 📊 Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/6826d855-1a5f-4861-a4da-334f8413bb5d
+Sistema completo para controle e análise de finanças pessoais, desenvolvido com tecnologias modernas para oferecer uma experiência intuitiva e eficiente no gerenciamento de contas mensais.
 
-## How can I edit this code?
+### ✨ Funcionalidades Principais
 
-There are several ways of editing your application.
+- **📈 Dashboard Interativo**: Visão geral das finanças com cards de resumo
+- **💰 Gestão de Contas**: Cadastro, edição e controle de status de contas
+- **🔄 Contas Fixas**: Configuração de contas recorrentes
+- **📊 Gráficos e Relatórios**: Análise visual dos gastos e receitas
+- **📅 Histórico Completo**: Acompanhamento de todas as transações
+- **📱 Design Responsivo**: Interface adaptada para desktop e mobile
 
-**Use Lovable**
+### 🎯 Benefícios
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6826d855-1a5f-4861-a4da-334f8413bb5d) and start prompting.
+- **Controle Total**: Gerencie todas as suas contas em um só lugar
+- **Análise Inteligente**: Gráficos e relatórios para entender seus gastos
+- **Planejamento**: Visualize contas futuras para melhor planejamento
+- **Simplicidade**: Interface intuitiva e fácil de usar
+- **Simplicidade**: Interface intuitiva e fácil de usar
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Tecnologias Utilizadas
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + TypeScript
+- **UI Framework**: shadcn/ui + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL)
+- **Build Tool**: Vite
+- **Gráficos**: Recharts
+- **Formulários**: React Hook Form + Zod
+- **Ícones**: Lucide React
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📦 Instalação e Uso
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Pré-requisitos
 
-Follow these steps:
+- Node.js 18+ 
+- npm ou yarn
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Passos para Instalação
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# 1. Clone o repositório
+git clone <URL_DO_REPOSITORIO>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 2. Navegue para o diretório
+cd monthly-tally-tracker
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Instale as dependências
+npm install
+
+# 4. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Acessando o Sistema
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Abra o navegador e acesse `http://localhost:5173`
+2. Comece a gerenciar suas finanças!
 
-**Use GitHub Codespaces**
+## 📱 Como Usar
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 🏠 Dashboard
+- **Visão Geral**: Cards com resumo financeiro do mês
+- **Filtro por Mês**: Selecione diferentes períodos para análise
+- **Ações Rápidas**: Acesso direto às principais funcionalidades
+- **Status do Mês**: Controle de contas pagas e pendentes
 
-## What technologies are used for this project?
+### 💰 Gestão de Contas
+- **Nova Conta**: Cadastre contas com valor, data e descrição
+- **Edição**: Modifique informações de contas existentes
+- **Status**: Marque contas como pagas ou pendentes
+- **Exclusão**: Remova contas quando necessário
 
-This project is built with:
+### 🔄 Contas Fixas
+- **Configuração**: Defina contas que se repetem mensalmente
+- **Geração Automática**: Crie contas mensais automaticamente
+- **Personalização**: Configure valores e frequências
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 📊 Gráficos e Análises
+- **Gráficos de Pizza**: Distribuição de gastos por categoria
+- **Gráficos de Linha**: Evolução financeira ao longo do tempo
+- **Filtros**: Análise por período específico
+- **Exportação**: Visualize dados em diferentes formatos
 
-## How can I deploy this project?
+### 📅 Histórico
+- **Lista Completa**: Todas as contas cadastradas
+- **Filtros Avançados**: Busca por período, status e categoria
+- **Detalhes**: Informações completas de cada transação
 
-Simply open [Lovable](https://lovable.dev/projects/6826d855-1a5f-4861-a4da-334f8413bb5d) and click on Share -> Publish.
+## 🔧 Configuração do Ambiente
 
-## Can I connect a custom domain to my Lovable project?
+### Estrutura do Banco de Dados
 
-Yes, you can!
+O sistema utiliza as seguintes tabelas no Supabase:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **contas**: Contas mensais dos usuários
+- **contas_fixas**: Configurações de contas recorrentes
+- **geracao_contas_mensais**: Histórico de geração automática
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🎨 Design System
+
+### Cores Principais
+- **Primária**: Verde esmeralda (#10B981)
+- **Background**: Cinza escuro para tema dark
+- **Texto**: Branco para contraste
+
+### Componentes
+- **Cards**: Para exibição de informações
+- **Botões**: Gradientes e estados hover
+- **Formulários**: Validação em tempo real
+- **Gráficos**: Visualizações interativas
+
+## 📈 Funcionalidades Avançadas
+
+### Filtro de Meses
+- Visualize dados de meses passados
+- Planeje contas futuras (próximos 3 meses)
+- Comparação com meses anteriores
+
+### Sistema de Loading
+- Estados de carregamento em todas as operações
+- Feedback visual para o usuário
+- Tratamento de erros amigável
+
+### Responsividade
+- Interface adaptada para mobile
+- Navegação otimizada para touch
+- Layout flexível para diferentes telas
+
+## 🔐 Segurança
+
+### Dados e Validação
+- **Validação**: Formulários com validação robusta
+- **Dados Seguros**: Armazenamento seguro no Supabase
+- **Backup**: Dados protegidos com backup automático
+
+### 🚨 Boas Práticas
+- ✅ Use apenas chaves **públicas** no frontend
+- ✅ Configure RLS (Row Level Security) no Supabase
+- ✅ Monitore logs de acesso regularmente
+
+## 🚀 Deploy
+
+### Desenvolvimento
+```bash
+npm run dev
+```
+
+### Build de Produção
+```bash
+npm run build
+```
+
+### Preview
+```bash
+npm run preview
+```
+
+## 📝 Licença
+
+Este projeto é desenvolvido para uso pessoal e educacional.
+
+## 🤝 Contribuição
+
+Para contribuir com o projeto:
+
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Abra um Pull Request
+
+## 📞 Suporte
+
+Para dúvidas ou suporte, entre em contato através do repositório.
+
+---
+
+**Desenvolvido com ❤️ usando React, TypeScript e Supabase**
