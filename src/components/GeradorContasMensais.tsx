@@ -33,11 +33,22 @@ const GeradorContasMensais = () => {
     const contasFixasBase = (await storage.getContasFixas()).filter(cf => cf.ativo);
     
     const contasParaGerar: ContaParaGerar[] = await Promise.all(
-      contasFixasBase.map(async conta => ({
-        ...conta,
-        valorAjustado: conta.valorPadrao,
-        jaGerada: await storage.jaGeradoNoMes(conta.id, mes)
-      }))
+      contasFixasBase.map(async conta => {
+        const jaGerada = await storage.jaGeradoNoMes(conta.id, mes);
+        let valorAjustado = conta.valorPadrao;
+        
+        // Se já foi gerada, buscar o valor da geração mensal
+        if (jaGerada) {
+          const valorGeracao = await storage.getValorGeracao(conta.id, mes);
+          valorAjustado = valorGeracao || conta.valorPadrao;
+        }
+        
+        return {
+          ...conta,
+          valorAjustado,
+          jaGerada
+        };
+      })
     );
 
     setContasFixas(contasParaGerar);

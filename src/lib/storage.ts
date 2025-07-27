@@ -306,5 +306,26 @@ export const storage = {
       console.error('Erro ao atualizar valor da geração:', error);
       throw error;
     }
+  },
+
+  getValorGeracao: async (contaFixaId: string, mes: string): Promise<number | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('geracoes_mensais')
+        .select('valor')
+        .eq('conta_fixa_id', contaFixaId)
+        .eq('mes', mes)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Erro ao buscar valor da geração:', error);
+        return null;
+      }
+      
+      return data ? Number(data.valor) : null;
+    } catch (error) {
+      console.error('Erro ao buscar valor da geração:', error);
+      return null;
+    }
   }
 };
