@@ -292,15 +292,46 @@ export const storage = {
 
   atualizarValorGeracao: async (contaFixaId: string, mes: string, novoValor: number): Promise<void> => {
     try {
-      const { error } = await supabase
+      // Atualizar o valor na tabela geracoes_mensais
+      const { error: geracaoError } = await supabase
         .from('geracoes_mensais')
         .update({ valor: novoValor })
         .eq('conta_fixa_id', contaFixaId)
         .eq('mes', mes);
       
-      if (error) {
-        console.error('Erro ao atualizar valor da geração:', error);
-        throw error;
+      if (geracaoError) {
+        console.error('Erro ao atualizar valor da geração:', geracaoError);
+        throw geracaoError;
+      }
+
+      // Buscar os dados da conta fixa para encontrar a conta correspondente
+      const { data: contaFixa, error: contaFixaError } = await supabase
+        .from('contas_fixas')
+        .select('titulo, categoria, dia_vencimento')
+        .eq('id', contaFixaId)
+        .single();
+
+      if (contaFixaError) {
+        console.error('Erro ao buscar conta fixa:', contaFixaError);
+        throw contaFixaError;
+      }
+
+      // Calcular a data de vencimento para encontrar a conta correspondente
+      const [ano, mesNum] = mes.split('-');
+      const diaVencimento = Math.min(contaFixa.dia_vencimento, new Date(parseInt(ano), parseInt(mesNum), 0).getDate());
+      const dataVencimento = `${ano}-${mesNum}-${diaVencimento.toString().padStart(2, '0')}`;
+
+      // Atualizar a conta correspondente na tabela contas
+      const { error: contaError } = await supabase
+        .from('contas')
+        .update({ valor: novoValor })
+        .eq('titulo', contaFixa.titulo)
+        .eq('categoria', contaFixa.categoria)
+        .eq('data', dataVencimento);
+
+      if (contaError) {
+        console.error('Erro ao atualizar conta:', contaError);
+        throw contaError;
       }
     } catch (error) {
       console.error('Erro ao atualizar valor da geração:', error);
