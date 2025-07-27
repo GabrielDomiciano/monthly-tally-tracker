@@ -15,7 +15,7 @@ export interface ResumoMensal {
 }
 
 export const CATEGORIAS = [
-  'Aluguel',
+  'Apartamento',
   'Energia',
   'Água',
   'Internet',
@@ -25,6 +25,8 @@ export const CATEGORIAS = [
   'Saúde',
   'Educação',
   'Lazer',
+  'Cartão de Crédito',
+  'Igreja',
   'Outros'
 ] as const;
 

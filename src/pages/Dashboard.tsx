@@ -49,7 +49,7 @@ const Dashboard = () => {
         isDateInMonth(conta.data, mesAnterior.start, mesAnterior.end)
       );
 
-      setContas(contasAtual.slice(0, 5)); // Últimas 5 contas
+      setContas(contasAtual.slice(0, 15)); // Últimas 15 contas
 
       // Calcular resumo do mês atual
       const totalAtual = contasAtual.reduce((sum, conta) => sum + conta.valor, 0);
