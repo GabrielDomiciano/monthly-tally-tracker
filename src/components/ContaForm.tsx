@@ -72,7 +72,7 @@ const ContaForm = ({ onSubmit, initialData, isEditing = false }: ContaFormProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="titulo">Título</Label>
               <Input
@@ -139,11 +139,11 @@ const ContaForm = ({ onSubmit, initialData, isEditing = false }: ContaFormProps)
 
           <div className="space-y-3">
             <Label>Status</Label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Badge
                 variant={status === 'pendente' ? 'default' : 'secondary'}
                 className={cn(
-                  'cursor-pointer px-4 py-2 transition-all duration-200',
+                  'cursor-pointer px-4 py-2 transition-all duration-200 text-center',
                   status === 'pendente' 
                     ? 'bg-warning text-warning-foreground shadow-md' 
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -156,7 +156,7 @@ const ContaForm = ({ onSubmit, initialData, isEditing = false }: ContaFormProps)
               <Badge
                 variant={status === 'pago' ? 'default' : 'secondary'}
                 className={cn(
-                  'cursor-pointer px-4 py-2 transition-all duration-200',
+                  'cursor-pointer px-4 py-2 transition-all duration-200 text-center',
                   status === 'pago' 
                     ? 'bg-success text-success-foreground shadow-md' 
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'

@@ -34,13 +34,13 @@ const ResumoCard = ({ title, value, icon: Icon, change, variant = 'default' }: R
       variantStyles[variant]
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className={cn('h-5 w-5', iconStyles[variant])} />
+        <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', iconStyles[variant])} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
+        <div className="text-lg sm:text-2xl font-bold text-foreground">{value}</div>
         {change && (
           <p className={cn(
             'text-xs mt-1',

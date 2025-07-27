@@ -137,33 +137,35 @@ const GraficosPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gráficos e Análises</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gráficos e Análises</h1>
             <p className="text-muted-foreground">Visualize seus dados financeiros de forma clara</p>
           </div>
 
           {/* Filtro de Mês */}
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={filtroMes} onValueChange={setFiltroMes}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Todos os meses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os meses</SelectItem>
-                {mesesDisponiveis.map(mes => (
-                  <SelectItem key={mes} value={mes}>
-                    {formatarMes(mes)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Select value={filtroMes} onValueChange={setFiltroMes}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Todos os meses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os meses</SelectItem>
+                  {mesesDisponiveis.map(mes => (
+                    <SelectItem key={mes} value={mes}>
+                      {formatarMes(mes)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {filtroMes && (
-              <Button variant="outline" size="sm" onClick={() => setFiltroMes('todos')}>
+              <Button variant="outline" size="sm" onClick={() => setFiltroMes('todos')} className="w-full sm:w-auto">
                 Limpar
               </Button>
             )}
@@ -171,7 +173,7 @@ const GraficosPage = () => {
         </div>
 
         {/* Grid de Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Gráfico de Categorias (Pizza) */}
           <Card>
             <CardHeader>
@@ -182,7 +184,7 @@ const GraficosPage = () => {
             </CardHeader>
             <CardContent>
               {dadosGrafico.categorias.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                   <PieChart>
                     <Pie
                       data={dadosGrafico.categorias}
@@ -190,7 +192,7 @@ const GraficosPage = () => {
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
+                      outerRadius={60}
                       fill="#8884d8"
                       dataKey="value"
                     >
@@ -202,7 +204,7 @@ const GraficosPage = () => {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground">
                   Nenhum dado disponível
                 </div>
               )}
@@ -219,7 +221,7 @@ const GraficosPage = () => {
             </CardHeader>
             <CardContent>
               {dadosGrafico.statusDistribuicao.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                   <PieChart>
                     <Pie
                       data={dadosGrafico.statusDistribuicao}
@@ -227,7 +229,7 @@ const GraficosPage = () => {
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
+                      outerRadius={60}
                       fill="#8884d8"
                       dataKey="value"
                     >
@@ -239,7 +241,7 @@ const GraficosPage = () => {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground">
                   Nenhum dado disponível
                 </div>
               )}
@@ -257,7 +259,7 @@ const GraficosPage = () => {
           </CardHeader>
           <CardContent>
             {dadosGrafico.evolucaoMensal.length > 0 ? (
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" height={300} className="sm:h-[400px]">
                 <LineChart data={dadosGrafico.evolucaoMensal}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis 
@@ -305,7 +307,7 @@ const GraficosPage = () => {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[300px] sm:h-[400px] flex items-center justify-center text-muted-foreground">
                 Nenhum dado disponível para evolução mensal
               </div>
             )}
@@ -322,7 +324,7 @@ const GraficosPage = () => {
           </CardHeader>
           <CardContent>
             {dadosGrafico.categorias.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                 <BarChart data={dadosGrafico.categorias}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis 
@@ -349,20 +351,20 @@ const GraficosPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <p className="text-lg mb-2">Nenhum dado para exibir</p>
                   <p className="mb-4">Cadastre algumas contas para ver os gráficos aqui</p>
                   <div className="space-y-2">
                     <Link to="/contas-fixas">
-                      <Button className="bg-gradient-primary hover:opacity-90">
+                      <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                         <Repeat className="h-4 w-4 mr-2" />
                         Configurar Contas Fixas
                       </Button>
                     </Link>
                     <div>
                       <Link to="/contas">
-                        <Button variant="outline">
+                        <Button variant="outline" className="w-full sm:w-auto">
                           <Plus className="h-4 w-4 mr-2" />
                           Nova Conta Avulsa
                         </Button>

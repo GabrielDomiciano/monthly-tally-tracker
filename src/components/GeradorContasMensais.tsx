@@ -144,7 +144,7 @@ const GeradorContasMensais = () => {
   const totalNaoGerado = contasFixas.filter(c => !c.jaGerada).reduce((sum, conta) => sum + conta.valorAjustado, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -153,7 +153,7 @@ const GeradorContasMensais = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="mes">Mês de Geração</Label>
               <Input
@@ -166,14 +166,14 @@ const GeradorContasMensais = () => {
 
             <Card className="p-4">
               <div className="text-sm text-muted-foreground">Total Previsto</div>
-              <div className="text-xl font-bold text-foreground">
+              <div className="text-lg sm:text-xl font-bold text-foreground">
                 {formatCurrency(totalPrevisto)}
               </div>
             </Card>
 
             <Card className="p-4">
               <div className="text-sm text-muted-foreground">A Gerar</div>
-              <div className="text-xl font-bold text-primary">
+              <div className="text-lg sm:text-xl font-bold text-primary">
                 {formatCurrency(totalNaoGerado)}
               </div>
             </Card>
@@ -216,19 +216,21 @@ const GeradorContasMensais = () => {
             ) : (
               <div className="space-y-3">
                 {contasFixas.map(conta => (
-                  <div key={conta.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-foreground">{conta.titulo}</h4>
-                        <Badge variant="outline" className="text-xs">
-                          {conta.categoria}
-                        </Badge>
-                        {conta.jaGerada && (
-                          <Badge className="text-xs bg-success text-success-foreground">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Gerada
+                  <div key={conta.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                        <h4 className="font-medium text-foreground truncate">{conta.titulo}</h4>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-xs">
+                            {conta.categoria}
                           </Badge>
-                        )}
+                          {conta.jaGerada && (
+                            <Badge className="text-xs bg-success text-success-foreground">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Gerada
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Vencimento: dia {conta.diaVencimento}
@@ -247,7 +249,6 @@ const GeradorContasMensais = () => {
                           value={conta.valorAjustado}
                           onChange={(e) => atualizarValor(conta.id, parseFloat(e.target.value) || 0)}
                           className="w-32 text-right"
-                          
                         />
                       </div>
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -262,7 +263,7 @@ const GeradorContasMensais = () => {
 
       {contasFixas.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
+          <CardContent className="p-8 sm:p-12 text-center">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
             <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma conta fixa ativa</h3>
             <p className="text-muted-foreground mb-4">

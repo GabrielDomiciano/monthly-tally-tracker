@@ -21,15 +21,15 @@ const ContaCard = ({ conta, onEdit, onDelete, onToggleStatus }: ContaCardProps) 
       'transition-all duration-300 hover:shadow-elegant',
       isPago ? 'border-success/20 bg-success/5' : 'border-warning/20 bg-warning/5'
     )}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-foreground">{conta.titulo}</h3>
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+              <h3 className="font-semibold text-foreground truncate">{conta.titulo}</h3>
               <Badge 
                 variant={isPago ? 'default' : 'secondary'}
                 className={cn(
-                  'text-xs',
+                  'text-xs w-fit',
                   isPago 
                     ? 'bg-success text-success-foreground' 
                     : 'bg-warning text-warning-foreground'
@@ -45,7 +45,7 @@ const ContaCard = ({ conta, onEdit, onDelete, onToggleStatus }: ContaCardProps) 
             </div>
             
             <div className="space-y-1">
-              <p className="text-2xl font-bold text-primary">
+              <p className="text-xl sm:text-2xl font-bold text-primary">
                 {formatCurrency(conta.valor)}
               </p>
               <p className="text-sm text-muted-foreground">
@@ -54,7 +54,7 @@ const ContaCard = ({ conta, onEdit, onDelete, onToggleStatus }: ContaCardProps) 
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end sm:justify-start gap-1">
             {onToggleStatus && (
               <Button
                 variant="ghost"

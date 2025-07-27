@@ -135,25 +135,26 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4 space-y-4 sm:space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
             <p className="text-muted-foreground">Visão geral das suas contas mensais</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button 
               variant="outline" 
               onClick={() => setShowConfig(!showConfig)}
               size="sm"
+              className="w-full sm:w-auto"
             >
               <Settings className="h-4 w-4 mr-2" />
               Configurar
             </Button>
-            <Link to="/contas">
-              <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-glow">
+            <Link to="/contas" className="w-full sm:w-auto">
+              <Button className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-glow">
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Conta
               </Button>
@@ -163,13 +164,13 @@ const Dashboard = () => {
 
         {/* Configurações de Dados */}
         {showConfig && (
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <ConfiguracoesDados onDataChange={carregarDados} />
           </div>
         )}
 
         {/* Cards de Resumo */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <ResumoCard
             title="Total do Mês"
             value={formatCurrency(resumoAtual.total)}
@@ -207,12 +208,12 @@ const Dashboard = () => {
         </div>
 
         {/* Contas Recentes */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <h2 className="text-xl font-semibold text-foreground">Contas Recentes</h2>
-              <Link to="/historico">
-                <Button variant="outline" size="sm">
+              <Link to="/historico" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Ver Todas
                 </Button>
               </Link>

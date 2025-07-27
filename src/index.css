@@ -119,5 +119,56 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Melhorias para responsividade */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Melhorar legibilidade em mobile */
+  @media (max-width: 640px) {
+    body {
+      font-size: 16px; /* Evita zoom automático no iOS */
+    }
+  }
+
+  /* Melhorar espaçamento em mobile */
+  .mobile-padding {
+    @apply px-4 py-2;
+  }
+
+  /* Melhorar toque em mobile */
+  button, a, [role="button"] {
+    min-height: 44px; /* Tamanho mínimo recomendado para toque */
+  }
+
+  /* Melhorar scroll em mobile */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Melhorias específicas para componentes */
+@layer components {
+  /* Cards responsivos */
+  .responsive-card {
+    @apply transition-all duration-300 hover:shadow-elegant;
+  }
+
+  /* Botões responsivos */
+  .responsive-button {
+    @apply transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Formulários responsivos */
+  .responsive-form {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  /* Grid responsivo */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
   }
 }

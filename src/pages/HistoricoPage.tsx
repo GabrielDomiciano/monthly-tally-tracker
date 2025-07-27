@@ -114,24 +114,24 @@ const HistoricoPage = () => {
   const totalPendente = contasFiltradas.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Histórico de Contas</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Histórico de Contas</h1>
             <p className="text-muted-foreground">Visualize e gerencie todas as suas contas</p>
           </div>
         </div>
 
         {/* Resumo */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Geral</p>
-                  <p className="text-xl font-bold text-foreground">{formatCurrency(totalGeral)}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">{formatCurrency(totalGeral)}</p>
                 </div>
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
@@ -143,7 +143,7 @@ const HistoricoPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Pago</p>
-                  <p className="text-xl font-bold text-success">{formatCurrency(totalPago)}</p>
+                  <p className="text-lg sm:text-xl font-bold text-success">{formatCurrency(totalPago)}</p>
                 </div>
                 <div className="text-success">✓</div>
               </div>
@@ -155,7 +155,7 @@ const HistoricoPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pendente</p>
-                  <p className="text-xl font-bold text-warning">{formatCurrency(totalPendente)}</p>
+                  <p className="text-lg sm:text-xl font-bold text-warning">{formatCurrency(totalPendente)}</p>
                 </div>
                 <div className="text-warning">⏳</div>
               </div>
@@ -167,7 +167,7 @@ const HistoricoPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Contas</p>
-                  <p className="text-xl font-bold text-foreground">{contasFiltradas.length}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">{contasFiltradas.length}</p>
                 </div>
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
@@ -184,7 +184,7 @@ const HistoricoPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -257,7 +257,7 @@ const HistoricoPage = () => {
             ))
           ) : (
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-8 sm:p-12 text-center">
                 <div className="text-muted-foreground">
                   <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma conta encontrada</p>
