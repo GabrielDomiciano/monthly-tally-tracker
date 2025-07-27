@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContaCard from '@/components/ContaCard';
+import { Loading } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +12,7 @@ import { Conta, CATEGORIAS } from '@/types/conta';
 import { formatCurrency, formatDate } from '@/lib/date-utils';
 import { Search, Filter, Calendar, DollarSign, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLoading } from '@/hooks/use-loading';
 
 const HistoricoPage = () => {
   const [contas, setContas] = useState<Conta[]>([]);
@@ -22,23 +24,38 @@ const HistoricoPage = () => {
     mes: ''
   });
   const { toast } = useToast();
+  
+  const { 
+    isLoading, 
+    error, 
+    retryCount, 
+    executeWithLoading 
+  } = useLoading({
+    onError: (errorMessage) => {
+      toast({
+        title: "Erro ao carregar dados",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  });
 
-  useEffect(() => {
-    carregarContas();
-  }, []);
-
-  useEffect(() => {
-    aplicarFiltros();
-  }, [contas, filtros]);
-
-  const carregarContas = async () => {
-    const todasContas = await storage.getContas();
+  const carregarContas = async (signal?: AbortSignal) => {
+    const todasContas = await storage.getContas(signal);
     // Ordenar por data mais recente
     const contasOrdenadas = todasContas.sort((a, b) => 
       new Date(b.data).getTime() - new Date(a.data).getTime()
     );
     setContas(contasOrdenadas);
   };
+
+  useEffect(() => {
+    executeWithLoading(carregarContas);
+  }, []);
+
+  useEffect(() => {
+    aplicarFiltros();
+  }, [contas, filtros]);
 
   const aplicarFiltros = () => {
     let resultado = [...contas];
@@ -76,26 +93,42 @@ const HistoricoPage = () => {
   const alternarStatus = async (id: string) => {
     const conta = contas.find(c => c.id === id);
     if (conta) {
-      const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
-      await storage.updateConta(id, { status: novoStatus });
-      await carregarContas();
-      
-      toast({
-        title: "Status atualizado",
-        description: `Conta marcada como ${novoStatus}`,
-      });
+      try {
+        const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
+        await storage.updateConta(id, { status: novoStatus });
+        await executeWithLoading(carregarContas);
+        
+        toast({
+          title: "Status atualizado",
+          description: `Conta marcada como ${novoStatus}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o status da conta",
+          variant: "destructive"
+        });
+      }
     }
   };
 
   const excluirConta = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta?')) {
-      await storage.deleteConta(id);
-      await carregarContas();
-      
-      toast({
-        title: "Conta excluída",
-        description: "A conta foi removida com sucesso",
-      });
+      try {
+        await storage.deleteConta(id);
+        await executeWithLoading(carregarContas);
+        
+        toast({
+          title: "Conta excluída",
+          description: "A conta foi removida com sucesso",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir a conta",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -125,55 +158,62 @@ const HistoricoPage = () => {
         </div>
 
         {/* Resumo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Geral</p>
-                  <p className="text-lg sm:text-xl font-bold text-foreground">{formatCurrency(totalGeral)}</p>
+        <Loading 
+          isLoading={isLoading} 
+          error={error} 
+          retryCount={retryCount}
+          onRetry={() => executeWithLoading(carregarContas)}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Geral</p>
+                    <p className="text-lg sm:text-xl font-bold text-foreground">{formatCurrency(totalGeral)}</p>
+                  </div>
+                  <DollarSign className="h-5 w-5 text-primary" />
                 </div>
-                <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="border-success/20 bg-success/5">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Pago</p>
-                  <p className="text-lg sm:text-xl font-bold text-success">{formatCurrency(totalPago)}</p>
+            <Card className="border-success/20 bg-success/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Pago</p>
+                    <p className="text-lg sm:text-xl font-bold text-success">{formatCurrency(totalPago)}</p>
+                  </div>
+                  <div className="text-success">✓</div>
                 </div>
-                <div className="text-success">✓</div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="border-warning/20 bg-warning/5">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pendente</p>
-                  <p className="text-lg sm:text-xl font-bold text-warning">{formatCurrency(totalPendente)}</p>
+            <Card className="border-warning/20 bg-warning/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pendente</p>
+                    <p className="text-lg sm:text-xl font-bold text-warning">{formatCurrency(totalPendente)}</p>
+                  </div>
+                  <div className="text-warning">⏳</div>
                 </div>
-                <div className="text-warning">⏳</div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Contas</p>
-                  <p className="text-lg sm:text-xl font-bold text-foreground">{contasFiltradas.length}</p>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Contas</p>
+                    <p className="text-lg sm:text-xl font-bold text-foreground">{contasFiltradas.length}</p>
+                  </div>
+                  <Calendar className="h-5 w-5 text-primary" />
                 </div>
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Loading>
 
         {/* Filtros */}
         <Card>
@@ -246,36 +286,43 @@ const HistoricoPage = () => {
 
         {/* Lista de Contas */}
         <div className="space-y-4">
-          {contasFiltradas.length > 0 ? (
-            contasFiltradas.map(conta => (
-              <ContaCard
-                key={conta.id}
-                conta={conta}
-                onToggleStatus={alternarStatus}
-                onDelete={excluirConta}
-              />
-            ))
-          ) : (
-            <Card>
-              <CardContent className="p-8 sm:p-12 text-center">
-                <div className="text-muted-foreground">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma conta encontrada</p>
-                  <p className="text-sm">Tente ajustar os filtros ou adicionar novas contas</p>
-                  {contas.length === 0 && (
-                    <div className="mt-4">
-                      <Link to="/contas">
-                        <Button className="bg-gradient-primary hover:opacity-90">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Cadastrar primeira conta
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Loading 
+            isLoading={isLoading} 
+            error={error} 
+            retryCount={retryCount}
+            onRetry={() => executeWithLoading(carregarContas)}
+          >
+            {contasFiltradas.length > 0 ? (
+              contasFiltradas.map(conta => (
+                <ContaCard
+                  key={conta.id}
+                  conta={conta}
+                  onToggleStatus={alternarStatus}
+                  onDelete={excluirConta}
+                />
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-8 sm:p-12 text-center">
+                  <div className="text-muted-foreground">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma conta encontrada</p>
+                    <p className="text-sm">Tente ajustar os filtros ou adicionar novas contas</p>
+                    {contas.length === 0 && (
+                      <div className="mt-4">
+                        <Link to="/contas">
+                          <Button className="bg-gradient-primary hover:opacity-90">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Cadastrar primeira conta
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </Loading>
         </div>
       </div>
     </div>

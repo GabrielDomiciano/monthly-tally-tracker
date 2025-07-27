@@ -4,8 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const storage = {
   // CRUD operations for Conta
-  getContas: async (): Promise<Conta[]> => {
+  getContas: async (signal?: AbortSignal): Promise<Conta[]> => {
     try {
+      // Verificar se a operação foi cancelada
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('contas')
         .select('*')
@@ -13,7 +18,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao carregar contas:', error);
-        return [];
+        throw new Error(`Erro ao carregar contas: ${error.message}`);
       }
       
       return data?.map(conta => ({
@@ -26,7 +31,7 @@ export const storage = {
       })) || [];
     } catch (error) {
       console.error('Erro ao carregar contas:', error);
-      return [];
+      throw error;
     }
   },
 
@@ -35,8 +40,12 @@ export const storage = {
     console.warn('setContas is deprecated when using Supabase');
   },
 
-  addConta: async (conta: Omit<Conta, 'id'>): Promise<Conta> => {
+  addConta: async (conta: Omit<Conta, 'id'>, signal?: AbortSignal): Promise<Conta> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('contas')
         .insert({
@@ -51,7 +60,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao adicionar conta:', error);
-        throw error;
+        throw new Error(`Erro ao adicionar conta: ${error.message}`);
       }
       
       return {
@@ -68,8 +77,12 @@ export const storage = {
     }
   },
 
-  updateConta: async (id: string, updates: Partial<Conta>): Promise<void> => {
+  updateConta: async (id: string, updates: Partial<Conta>, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const updateData: any = {};
       if (updates.titulo !== undefined) updateData.titulo = updates.titulo;
       if (updates.valor !== undefined) updateData.valor = updates.valor;
@@ -84,7 +97,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao atualizar conta:', error);
-        throw error;
+        throw new Error(`Erro ao atualizar conta: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar conta:', error);
@@ -92,8 +105,12 @@ export const storage = {
     }
   },
 
-  deleteConta: async (id: string): Promise<void> => {
+  deleteConta: async (id: string, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { error } = await supabase
         .from('contas')
         .delete()
@@ -101,7 +118,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao deletar conta:', error);
-        throw error;
+        throw new Error(`Erro ao deletar conta: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao deletar conta:', error);
@@ -110,8 +127,12 @@ export const storage = {
   },
 
   // CRUD operations for ContaFixa
-  getContasFixas: async (): Promise<ContaFixa[]> => {
+  getContasFixas: async (signal?: AbortSignal): Promise<ContaFixa[]> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('contas_fixas')
         .select('*')
@@ -119,7 +140,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao carregar contas fixas:', error);
-        return [];
+        throw new Error(`Erro ao carregar contas fixas: ${error.message}`);
       }
       
       return data?.map(conta => ({
@@ -132,7 +153,7 @@ export const storage = {
       })) || [];
     } catch (error) {
       console.error('Erro ao carregar contas fixas:', error);
-      return [];
+      throw error;
     }
   },
 
@@ -141,8 +162,12 @@ export const storage = {
     console.warn('setContasFixas is deprecated when using Supabase');
   },
 
-  addContaFixa: async (conta: Omit<ContaFixa, 'id'>): Promise<ContaFixa> => {
+  addContaFixa: async (conta: Omit<ContaFixa, 'id'>, signal?: AbortSignal): Promise<ContaFixa> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('contas_fixas')
         .insert({
@@ -157,7 +182,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao adicionar conta fixa:', error);
-        throw error;
+        throw new Error(`Erro ao adicionar conta fixa: ${error.message}`);
       }
       
       return {
@@ -174,8 +199,12 @@ export const storage = {
     }
   },
 
-  updateContaFixa: async (id: string, updates: Partial<ContaFixa>): Promise<void> => {
+  updateContaFixa: async (id: string, updates: Partial<ContaFixa>, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const updateData: any = {};
       if (updates.titulo !== undefined) updateData.titulo = updates.titulo;
       if (updates.categoria !== undefined) updateData.categoria = updates.categoria;
@@ -190,7 +219,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao atualizar conta fixa:', error);
-        throw error;
+        throw new Error(`Erro ao atualizar conta fixa: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar conta fixa:', error);
@@ -198,8 +227,12 @@ export const storage = {
     }
   },
 
-  deleteContaFixa: async (id: string): Promise<void> => {
+  deleteContaFixa: async (id: string, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { error } = await supabase
         .from('contas_fixas')
         .delete()
@@ -207,7 +240,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao deletar conta fixa:', error);
-        throw error;
+        throw new Error(`Erro ao deletar conta fixa: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao deletar conta fixa:', error);
@@ -216,8 +249,12 @@ export const storage = {
   },
 
   // CRUD operations for GeracaoContasMensal
-  getGeracoesMensais: async (): Promise<GeracaoContasMensal[]> => {
+  getGeracoesMensais: async (signal?: AbortSignal): Promise<GeracaoContasMensal[]> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('geracoes_mensais')
         .select('*')
@@ -225,7 +262,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao carregar gerações mensais:', error);
-        return [];
+        throw new Error(`Erro ao carregar gerações mensais: ${error.message}`);
       }
       
       return data?.map(geracao => ({
@@ -236,7 +273,7 @@ export const storage = {
       })) || [];
     } catch (error) {
       console.error('Erro ao carregar gerações mensais:', error);
-      return [];
+      throw error;
     }
   },
 
@@ -245,8 +282,12 @@ export const storage = {
     console.warn('setGeracoesMensais is deprecated when using Supabase');
   },
 
-  jaGeradoNoMes: async (contaFixaId: string, mes: string): Promise<boolean> => {
+  jaGeradoNoMes: async (contaFixaId: string, mes: string, signal?: AbortSignal): Promise<boolean> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('geracoes_mensais')
         .select('ja_gerada')
@@ -257,18 +298,22 @@ export const storage = {
       
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('Erro ao verificar geração:', error);
-        return false;
+        throw new Error(`Erro ao verificar geração: ${error.message}`);
       }
       
       return !!data;
     } catch (error) {
       console.error('Erro ao verificar geração:', error);
-      return false;
+      throw error;
     }
   },
 
-  marcarComoGerado: async (contaFixaId: string, mes: string, valor: number): Promise<void> => {
+  marcarComoGerado: async (contaFixaId: string, mes: string, valor: number, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { error } = await supabase
         .from('geracoes_mensais')
         .upsert({
@@ -282,7 +327,7 @@ export const storage = {
       
       if (error) {
         console.error('Erro ao marcar como gerado:', error);
-        throw error;
+        throw new Error(`Erro ao marcar como gerado: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao marcar como gerado:', error);
@@ -290,8 +335,12 @@ export const storage = {
     }
   },
 
-  atualizarValorGeracao: async (contaFixaId: string, mes: string, novoValor: number): Promise<void> => {
+  atualizarValorGeracao: async (contaFixaId: string, mes: string, novoValor: number, signal?: AbortSignal): Promise<void> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       // Atualizar o valor na tabela geracoes_mensais
       const { error: geracaoError } = await supabase
         .from('geracoes_mensais')
@@ -301,7 +350,7 @@ export const storage = {
       
       if (geracaoError) {
         console.error('Erro ao atualizar valor da geração:', geracaoError);
-        throw geracaoError;
+        throw new Error(`Erro ao atualizar valor da geração: ${geracaoError.message}`);
       }
 
       // Buscar os dados da conta fixa para encontrar a conta correspondente
@@ -313,7 +362,7 @@ export const storage = {
 
       if (contaFixaError) {
         console.error('Erro ao buscar conta fixa:', contaFixaError);
-        throw contaFixaError;
+        throw new Error(`Erro ao buscar conta fixa: ${contaFixaError.message}`);
       }
 
       // Calcular a data de vencimento para encontrar a conta correspondente
@@ -331,7 +380,7 @@ export const storage = {
 
       if (contaError) {
         console.error('Erro ao atualizar conta:', contaError);
-        throw contaError;
+        throw new Error(`Erro ao atualizar conta: ${contaError.message}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar valor da geração:', error);
@@ -339,8 +388,12 @@ export const storage = {
     }
   },
 
-  getValorGeracao: async (contaFixaId: string, mes: string): Promise<number | null> => {
+  getValorGeracao: async (contaFixaId: string, mes: string, signal?: AbortSignal): Promise<number | null> => {
     try {
+      if (signal?.aborted) {
+        throw new Error('Operação cancelada');
+      }
+
       const { data, error } = await supabase
         .from('geracoes_mensais')
         .select('valor')
@@ -350,13 +403,13 @@ export const storage = {
       
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('Erro ao buscar valor da geração:', error);
-        return null;
+        throw new Error(`Erro ao buscar valor da geração: ${error.message}`);
       }
       
       return data ? Number(data.valor) : null;
     } catch (error) {
       console.error('Erro ao buscar valor da geração:', error);
-      return null;
+      throw error;
     }
   }
 };

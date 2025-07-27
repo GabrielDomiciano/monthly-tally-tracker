@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContaFixaForm from '@/components/ContaFixaForm';
 import GeradorContasMensais from '@/components/GeradorContasMensais';
+import { Loading } from '@/components/ui/loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,27 +12,37 @@ import { storage } from '@/lib/storage';
 import { formatCurrency } from '@/lib/date-utils';
 import { Repeat, Plus, Edit, Trash2, Settings, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLoading } from '@/hooks/use-loading';
 
 const ContasFixasPage = () => {
   const [contasFixas, setContasFixas] = useState<ContaFixa[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editingConta, setEditingConta] = useState<ContaFixa | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
+  
+  const { 
+    isLoading, 
+    error, 
+    retryCount, 
+    executeWithLoading 
+  } = useLoading({
+    onError: (errorMessage) => {
+      toast({
+        title: "Erro ao carregar dados",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const carregarContasFixas = async (signal?: AbortSignal) => {
+    const contas = await storage.getContasFixas(signal);
+    setContasFixas(contas);
+  };
 
   useEffect(() => {
-    carregarContasFixas();
+    executeWithLoading(carregarContasFixas);
   }, []);
-
-  const carregarContasFixas = async () => {
-    try {
-      setLoading(true);
-      const contas = await storage.getContasFixas();
-      setContasFixas(contas);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (contaData: Omit<ContaFixa, 'id'>) => {
     try {
@@ -49,7 +60,7 @@ const ContasFixasPage = () => {
         });
       }
       
-      await carregarContasFixas();
+      await executeWithLoading(carregarContasFixas);
       setShowForm(false);
       setEditingConta(null);
     } catch (error) {
@@ -68,24 +79,40 @@ const ContasFixasPage = () => {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta fixa?')) {
-      await storage.deleteContaFixa(id);
-      await carregarContasFixas();
-      
-      toast({
-        title: "Conta fixa excluída",
-        description: "A conta fixa foi removida com sucesso",
-      });
+      try {
+        await storage.deleteContaFixa(id);
+        await executeWithLoading(carregarContasFixas);
+        
+        toast({
+          title: "Conta fixa excluída",
+          description: "A conta fixa foi removida com sucesso",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir a conta fixa",
+          variant: "destructive"
+        });
+      }
     }
   };
 
   const toggleAtivo = async (id: string, ativo: boolean) => {
-    await storage.updateContaFixa(id, { ativo: !ativo });
-    await carregarContasFixas();
-    
-    toast({
-      title: "Status atualizado",
-      description: `Conta fixa ${!ativo ? 'ativada' : 'desativada'}`,
-    });
+    try {
+      await storage.updateContaFixa(id, { ativo: !ativo });
+      await executeWithLoading(carregarContasFixas);
+      
+      toast({
+        title: "Status atualizado",
+        description: `Conta fixa ${!ativo ? 'ativada' : 'desativada'}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status da conta fixa",
+        variant: "destructive"
+      });
+    }
   };
 
   const cancelarEdicao = () => {
@@ -151,105 +178,90 @@ const ContasFixasPage = () => {
                   </Button>
                 </div>
 
-                {loading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[...Array(3)].map((_, i) => (
-                      <Card key={i} className="animate-pulse">
-                        <CardHeader className="pb-3">
-                          <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
-                          <div className="flex gap-2">
-                            <div className="h-4 bg-muted rounded w-16"></div>
-                            <div className="h-4 bg-muted rounded w-12"></div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div className="h-8 bg-muted rounded w-1/2"></div>
-                          <div className="h-4 bg-muted rounded w-3/4"></div>
-                          <div className="flex gap-2">
-                            <div className="h-8 bg-muted rounded flex-1"></div>
-                            <div className="h-8 bg-muted rounded w-10"></div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : contasFixas.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {contasFixas.map(conta => (
-                      <Card key={conta.id} className={`transition-all duration-300 hover:shadow-elegant ${!conta.ativo ? 'opacity-60' : ''}`}>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                                <Repeat className="h-4 w-4 text-primary flex-shrink-0" />
-                                <span className="truncate">{conta.titulo}</span>
-                              </CardTitle>
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-                                <Badge variant="outline" className="text-xs w-fit">
-                                  {conta.categoria}
-                                </Badge>
-                                <Badge 
-                                  variant={conta.ativo ? "default" : "secondary"}
-                                  className={`text-xs cursor-pointer w-fit ${conta.ativo ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'}`}
-                                  onClick={() => toggleAtivo(conta.id, conta.ativo)}
-                                >
-                                  {conta.ativo ? 'Ativo' : 'Inativo'}
-                                </Badge>
+                <Loading 
+                  isLoading={isLoading} 
+                  error={error} 
+                  retryCount={retryCount}
+                  onRetry={() => executeWithLoading(carregarContasFixas)}
+                >
+                  {contasFixas.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {contasFixas.map(conta => (
+                        <Card key={conta.id} className={`transition-all duration-300 hover:shadow-elegant ${!conta.ativo ? 'opacity-60' : ''}`}>
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                                  <Repeat className="h-4 w-4 text-primary flex-shrink-0" />
+                                  <span className="truncate">{conta.titulo}</span>
+                                </CardTitle>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                                  <Badge variant="outline" className="text-xs w-fit">
+                                    {conta.categoria}
+                                  </Badge>
+                                  <Badge 
+                                    variant={conta.ativo ? "default" : "secondary"}
+                                    className={`text-xs cursor-pointer w-fit ${conta.ativo ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'}`}
+                                    onClick={() => toggleAtivo(conta.id, conta.ativo)}
+                                  >
+                                    {conta.ativo ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div>
-                            <p className="text-xl sm:text-2xl font-bold text-primary">
-                              {formatCurrency(conta.valorPadrao)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Vencimento: dia {conta.diaVencimento}
-                            </p>
-                          </div>
-                          
-                          <div className="flex flex-col sm:flex-row items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(conta)}
-                              className="flex-1 w-full sm:w-auto"
-                            >
-                              <Edit className="h-3 w-3 mr-2" />
-                              Editar
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(conta.id)}
-                              className="text-destructive hover:text-destructive w-full sm:w-auto"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-8 sm:p-12 text-center">
-                      <Repeat className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma conta fixa cadastrada</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Configure suas contas recorrentes para gerar automaticamente a cada mês
-                      </p>
-                      <Button 
-                        onClick={() => setShowForm(true)}
-                        className="bg-gradient-primary hover:opacity-90"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Criar primeira conta fixa
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <p className="text-xl sm:text-2xl font-bold text-primary">
+                                {formatCurrency(conta.valorPadrao)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Vencimento: dia {conta.diaVencimento}
+                              </p>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(conta)}
+                                className="flex-1 w-full sm:w-auto"
+                              >
+                                <Edit className="h-3 w-3 mr-2" />
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(conta.id)}
+                                className="text-destructive hover:text-destructive w-full sm:w-auto"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8 sm:p-12 text-center">
+                        <Repeat className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma conta fixa cadastrada</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Configure suas contas recorrentes para gerar automaticamente a cada mês
+                        </p>
+                        <Button 
+                          onClick={() => setShowForm(true)}
+                          className="bg-gradient-primary hover:opacity-90"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Criar primeira conta fixa
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Loading>
               </>
             )}
           </TabsContent>

@@ -4,18 +4,22 @@ import ResumoCard from '@/components/ResumoCard';
 import ContaCard from '@/components/ContaCard';
 import PrimeiroUso from '@/components/PrimeiroUso';
 import ConfiguracoesDados from '@/components/ConfiguracoesDados';
+import { Loading } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { storage } from '@/lib/storage';
 import { adicionarContasExemplo } from '@/lib/sample-data';
-import { getCurrentMonth, getPreviousMonth, isDateInMonth, formatCurrency } from '@/lib/date-utils';
+import { getCurrentMonth, getPreviousMonth, isDateInMonth, formatCurrency, getMonthName } from '@/lib/date-utils';
 import { Conta, ResumoMensal } from '@/types/conta';
-import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp, Repeat, Settings } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, Receipt, Plus, TrendingUp, Repeat, Settings, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [contas, setContas] = useState<Conta[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showConfig, setShowConfig] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mesSelecionado, setMesSelecionado] = useState<string>('atual');
   const [resumoAtual, setResumoAtual] = useState<ResumoMensal>({
     total: 0,
     pago: 0,
@@ -28,18 +32,91 @@ const Dashboard = () => {
     pendente: 0,
     totalContas: 0
   });
+  const [temDados, setTemDados] = useState<boolean | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    carregarDados();
-  }, []);
+  // Gerar opções de meses (próximos 3 meses + atual + últimos 12 meses)
+  const gerarOpcoesMeses = () => {
+    const opcoes = [];
+    const hoje = new Date();
+    
+    // Próximos 3 meses (primeiro)
+    for (let i = 3; i >= 1; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+      opcoes.push({
+        value: `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`,
+        label: `${getMonthName(data)} (Próximo)`
+      });
+    }
+    
+    // Mês atual (meio)
+    opcoes.push({
+      value: 'atual',
+      label: `${getMonthName(hoje)} (Atual)`
+    });
+    
+    // Últimos 12 meses (por último)
+    for (let i = 1; i <= 12; i++) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      opcoes.push({
+        value: `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`,
+        label: getMonthName(data)
+      });
+    }
+    
+    return opcoes;
+  };
+
+  const obterPeriodoMensal = (mesValue: string) => {
+    if (mesValue === 'atual') {
+      return getCurrentMonth();
+    }
+    
+    const [ano, mes] = mesValue.split('-');
+    const data = new Date(parseInt(ano), parseInt(mes) - 1, 1);
+    const inicio = new Date(data.getFullYear(), data.getMonth(), 1);
+    const fim = new Date(data.getFullYear(), data.getMonth() + 1, 0);
+    
+    return { start: inicio, end: fim };
+  };
+
+  const obterPeriodoMensalAnterior = (mesValue: string) => {
+    if (mesValue === 'atual') {
+      return getPreviousMonth();
+    }
+    
+    const [ano, mes] = mesValue.split('-');
+    const data = new Date(parseInt(ano), parseInt(mes) - 2, 1);
+    const inicio = new Date(data.getFullYear(), data.getMonth(), 1);
+    const fim = new Date(data.getFullYear(), data.getMonth() + 1, 0);
+    
+    return { start: inicio, end: fim };
+  };
+
+  const isMesFuturo = (mesValue: string) => {
+    if (mesValue === 'atual') return false;
+    
+    const [ano, mes] = mesValue.split('-');
+    const dataMes = new Date(parseInt(ano), parseInt(mes) - 1, 1);
+    const hoje = new Date();
+    const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    
+    return dataMes > inicioMesAtual;
+  };
+
+  const obterLabelMes = (mesValue: string) => {
+    if (mesValue === 'atual') return 'Mês Atual';
+    
+    const opcoes = gerarOpcoesMeses();
+    const opcao = opcoes.find(o => o.value === mesValue);
+    return opcao?.label || 'Mês Selecionado';
+  };
 
   const carregarDados = async () => {
     try {
-      setLoading(true);
       const todasContas = await storage.getContas();
-      const mesAtual = getCurrentMonth();
-      const mesAnterior = getPreviousMonth();
+      const mesAtual = obterPeriodoMensal(mesSelecionado);
+      const mesAnterior = obterPeriodoMensalAnterior(mesSelecionado);
 
       const contasAtual = todasContas.filter(conta => 
         isDateInMonth(conta.data, mesAtual.start, mesAtual.end)
@@ -49,9 +126,9 @@ const Dashboard = () => {
         isDateInMonth(conta.data, mesAnterior.start, mesAnterior.end)
       );
 
-      setContas(contasAtual.slice(0, 15)); // Últimas 15 contas
+      setContas(contasAtual.slice(0, 15));
 
-      // Calcular resumo do mês atual
+      // Calcular resumo do mês selecionado
       const totalAtual = contasAtual.reduce((sum, conta) => sum + conta.valor, 0);
       const pagoAtual = contasAtual.filter(c => c.status === 'pago').reduce((sum, conta) => sum + conta.valor, 0);
       const pendenteAtual = contasAtual.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
@@ -74,22 +151,77 @@ const Dashboard = () => {
         pendente: pendenteAnterior,
         totalContas: contasAnterior.length
       });
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      setError('Erro ao carregar dados');
     }
   };
+
+  const verificarDados = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const todasContas = await storage.getContas();
+      const contasFixas = await storage.getContasFixas();
+      const temDadosExistentes = todasContas.length > 0 || contasFixas.length > 0;
+      
+      // Se não tem dados, adiciona dados de exemplo automaticamente
+      if (!temDadosExistentes) {
+        console.log('Nenhum dado encontrado, adicionando dados de exemplo...');
+        await adicionarContasExemplo();
+        // Recarrega os dados após adicionar
+        const novasContas = await storage.getContas();
+        const novasContasFixas = await storage.getContasFixas();
+        const temDadosAgora = novasContas.length > 0 || novasContasFixas.length > 0;
+        setTemDados(temDadosAgora);
+        
+        if (temDadosAgora) {
+          await carregarDados();
+        }
+      } else {
+        setTemDados(temDadosExistentes);
+        await carregarDados();
+      }
+    } catch (error) {
+      console.error('Erro ao verificar dados:', error);
+      setError('Erro ao verificar dados');
+      setTemDados(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    verificarDados();
+  }, []);
+
+  // Recarregar dados quando mudar o mês selecionado
+  useEffect(() => {
+    if (temDados) {
+      carregarDados();
+    }
+  }, [mesSelecionado]);
 
   const alternarStatus = async (id: string) => {
     const conta = contas.find(c => c.id === id);
     if (conta) {
-      const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
-      await storage.updateConta(id, { status: novoStatus });
-      await carregarDados();
-      
-      toast({
-        title: "Status atualizado",
-        description: `Conta marcada como ${novoStatus}`,
-      });
+      try {
+        const novoStatus = conta.status === 'pago' ? 'pendente' : 'pago';
+        await storage.updateConta(id, { status: novoStatus });
+        await verificarDados();
+        
+        toast({
+          title: "Status atualizado",
+          description: `Conta marcada como ${novoStatus}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o status da conta",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -106,24 +238,34 @@ const Dashboard = () => {
   };
 
   const adicionarDadosExemplo = async () => {
-    await adicionarContasExemplo();
-    await carregarDados();
-    toast({
-      title: "Dados de exemplo adicionados",
-      description: "Agora você pode explorar o sistema com dados de exemplo",
-    });
+    try {
+      await adicionarContasExemplo();
+      await verificarDados();
+      toast({
+        title: "Dados de exemplo adicionados",
+        description: "Agora você pode explorar o sistema com dados de exemplo",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar dados de exemplo",
+        variant: "destructive"
+      });
+    }
   };
 
-  const [temDados, setTemDados] = useState(false);
-
-  useEffect(() => {
-    const verificarDados = async () => {
-      const todasContas = await storage.getContas();
-      const contasFixas = await storage.getContasFixas();
-      setTemDados(todasContas.length > 0 || contasFixas.length > 0);
-    };
-    verificarDados();
-  }, []);
+  // Mostrar loading enquanto verifica se tem dados
+  if (temDados === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loading 
+          isLoading={true} 
+          text="Verificando dados..."
+          size="lg"
+        />
+      </div>
+    );
+  }
 
   // Se não tem dados, mostra tela de primeiro uso
   if (!temDados) {
@@ -162,56 +304,114 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Filtro de Mês */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Filtrar por mês:</span>
+            <Select value={mesSelecionado} onValueChange={setMesSelecionado}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Selecione o mês" />
+              </SelectTrigger>
+              <SelectContent>
+                {gerarOpcoesMeses().map((opcao) => (
+                  <SelectItem key={opcao.value} value={opcao.value}>
+                    {opcao.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isMesFuturo(mesSelecionado) && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-md">
+                <span className="text-xs text-blue-700 font-medium">Planejamento</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Dica para meses futuros */}
+          {isMesFuturo(mesSelecionado) && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <div className="text-blue-600 mt-0.5">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium">Modo Planejamento</p>
+                  <p className="text-xs mt-1">
+                    Visualize e planeje suas contas para meses futuros. Use as contas fixas para gerar contas automaticamente.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Configurações de Dados */}
         {showConfig && (
           <div className="mb-6 sm:mb-8">
-            <ConfiguracoesDados onDataChange={carregarDados} />
+            <ConfiguracoesDados onDataChange={verificarDados} />
           </div>
         )}
 
         {/* Cards de Resumo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <ResumoCard
-            title="Total do Mês"
-            value={formatCurrency(resumoAtual.total)}
-            icon={DollarSign}
-            change={calcularVariacao(resumoAtual.total, resumoAnterior.total)}
-            variant="default"
-          />
-          
-          <ResumoCard
-            title="Valor Pago"
-            value={formatCurrency(resumoAtual.pago)}
-            icon={CheckCircle}
-            change={calcularVariacao(resumoAtual.pago, resumoAnterior.pago)}
-            variant="success"
-          />
-          
-          <ResumoCard
-            title="Valor Pendente"
-            value={formatCurrency(resumoAtual.pendente)}
-            icon={Clock}
-            change={calcularVariacao(resumoAtual.pendente, resumoAnterior.pendente)}
-            variant="warning"
-          />
-          
-          <ResumoCard
-            title="Total de Contas"
-            value={resumoAtual.totalContas.toString()}
-            icon={Receipt}
-            change={{
-              value: `${resumoAnterior.totalContas} no mês anterior`,
-              type: 'neutral'
-            }}
-            variant="default"
-          />
-        </div>
+        <Loading 
+          isLoading={isLoading} 
+          error={error} 
+          onRetry={verificarDados}
+          className="mb-6 sm:mb-8"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <ResumoCard
+              title="Total do Mês"
+              value={formatCurrency(resumoAtual.total)}
+              icon={DollarSign}
+              change={calcularVariacao(resumoAtual.total, resumoAnterior.total)}
+              variant="default"
+            />
+            
+            <ResumoCard
+              title="Valor Pago"
+              value={formatCurrency(resumoAtual.pago)}
+              icon={CheckCircle}
+              change={calcularVariacao(resumoAtual.pago, resumoAnterior.pago)}
+              variant="success"
+            />
+            
+            <ResumoCard
+              title="Valor Pendente"
+              value={formatCurrency(resumoAtual.pendente)}
+              icon={Clock}
+              change={calcularVariacao(resumoAtual.pendente, resumoAnterior.pendente)}
+              variant="warning"
+            />
+            
+            <ResumoCard
+              title="Total de Contas"
+              value={resumoAtual.totalContas.toString()}
+              icon={Receipt}
+              change={{
+                value: `${resumoAnterior.totalContas} no mês anterior`,
+                type: 'neutral'
+              }}
+              variant="default"
+            />
+          </div>
+        </Loading>
 
         {/* Contas Recentes */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Contas Recentes</h2>
+              <h2 className="text-xl font-semibold text-foreground">
+                Contas do Mês
+                {mesSelecionado !== 'atual' && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    ({obterLabelMes(mesSelecionado)})
+                  </span>
+                )}
+              </h2>
               <Link to="/historico" className="w-full sm:w-auto">
                 <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Ver Todas
@@ -219,41 +419,48 @@ const Dashboard = () => {
               </Link>
             </div>
             
-            <div className="space-y-4">
-              {loading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="bg-card p-4 rounded-lg border border-border animate-pulse">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="h-4 bg-muted rounded w-1/3"></div>
-                          <div className="h-3 bg-muted rounded w-1/4"></div>
-                        </div>
-                        <div className="h-6 bg-muted rounded w-20"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : contas.length > 0 ? (
-                contas.map(conta => (
-                  <ContaCard
-                    key={conta.id}
-                    conta={conta}
-                    onToggleStatus={alternarStatus}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma conta cadastrada este mês</p>
-                  <Link to="/contas">
-                    <Button className="mt-4 bg-gradient-primary hover:opacity-90">
-                      Cadastrar primeira conta
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
+            <Loading 
+              isLoading={isLoading} 
+              error={error} 
+              onRetry={verificarDados}
+            >
+              <div className="space-y-4">
+                {contas.length > 0 ? (
+                  contas.map(conta => (
+                    <ContaCard
+                      key={conta.id}
+                      conta={conta}
+                      onToggleStatus={alternarStatus}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    {isMesFuturo(mesSelecionado) ? (
+                      <>
+                        <p>Nenhuma conta planejada para este mês</p>
+                        <p className="text-sm mt-2">Use as contas fixas para gerar contas automaticamente</p>
+                        <Link to="/contas-fixas">
+                          <Button className="mt-4 bg-gradient-primary hover:opacity-90">
+                            <Repeat className="h-4 w-4 mr-2" />
+                            Configurar Contas Fixas
+                          </Button>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <p>Nenhuma conta cadastrada neste mês</p>
+                        <Link to="/contas">
+                          <Button className="mt-4 bg-gradient-primary hover:opacity-90">
+                            Cadastrar primeira conta
+                          </Button>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Loading>
           </div>
 
           {/* Quick Actions */}
