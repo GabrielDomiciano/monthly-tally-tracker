@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const ContasFixasPage = () => {
   const [contasFixas, setContasFixas] = useState<ContaFixa[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingConta, setEditingConta] = useState<ContaFixa | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
@@ -23,8 +24,13 @@ const ContasFixasPage = () => {
   }, []);
 
   const carregarContasFixas = async () => {
-    const contas = await storage.getContasFixas();
-    setContasFixas(contas);
+    try {
+      setLoading(true);
+      const contas = await storage.getContasFixas();
+      setContasFixas(contas);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (contaData: Omit<ContaFixa, 'id'>) => {
@@ -143,7 +149,29 @@ const ContasFixasPage = () => {
                   </Button>
                 </div>
 
-                {contasFixas.length > 0 ? (
+                {loading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardHeader className="pb-3">
+                          <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
+                          <div className="flex gap-2">
+                            <div className="h-4 bg-muted rounded w-16"></div>
+                            <div className="h-4 bg-muted rounded w-12"></div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="h-8 bg-muted rounded w-1/2"></div>
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                          <div className="flex gap-2">
+                            <div className="h-8 bg-muted rounded flex-1"></div>
+                            <div className="h-8 bg-muted rounded w-10"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : contasFixas.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {contasFixas.map(conta => (
                       <Card key={conta.id} className={`transition-all duration-300 hover:shadow-elegant ${!conta.ativo ? 'opacity-60' : ''}`}>

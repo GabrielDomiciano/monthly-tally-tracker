@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [contas, setContas] = useState<Conta[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showConfig, setShowConfig] = useState(false);
   const [resumoAtual, setResumoAtual] = useState<ResumoMensal>({
     total: 0,
@@ -34,43 +35,48 @@ const Dashboard = () => {
   }, []);
 
   const carregarDados = async () => {
-    const todasContas = await storage.getContas();
-    const mesAtual = getCurrentMonth();
-    const mesAnterior = getPreviousMonth();
+    try {
+      setLoading(true);
+      const todasContas = await storage.getContas();
+      const mesAtual = getCurrentMonth();
+      const mesAnterior = getPreviousMonth();
 
-    const contasAtual = todasContas.filter(conta => 
-      isDateInMonth(conta.data, mesAtual.start, mesAtual.end)
-    );
+      const contasAtual = todasContas.filter(conta => 
+        isDateInMonth(conta.data, mesAtual.start, mesAtual.end)
+      );
 
-    const contasAnterior = todasContas.filter(conta => 
-      isDateInMonth(conta.data, mesAnterior.start, mesAnterior.end)
-    );
+      const contasAnterior = todasContas.filter(conta => 
+        isDateInMonth(conta.data, mesAnterior.start, mesAnterior.end)
+      );
 
-    setContas(contasAtual.slice(0, 5)); // Últimas 5 contas
+      setContas(contasAtual.slice(0, 5)); // Últimas 5 contas
 
-    // Calcular resumo do mês atual
-    const totalAtual = contasAtual.reduce((sum, conta) => sum + conta.valor, 0);
-    const pagoAtual = contasAtual.filter(c => c.status === 'pago').reduce((sum, conta) => sum + conta.valor, 0);
-    const pendenteAtual = contasAtual.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
+      // Calcular resumo do mês atual
+      const totalAtual = contasAtual.reduce((sum, conta) => sum + conta.valor, 0);
+      const pagoAtual = contasAtual.filter(c => c.status === 'pago').reduce((sum, conta) => sum + conta.valor, 0);
+      const pendenteAtual = contasAtual.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
 
-    setResumoAtual({
-      total: totalAtual,
-      pago: pagoAtual,
-      pendente: pendenteAtual,
-      totalContas: contasAtual.length
-    });
+      setResumoAtual({
+        total: totalAtual,
+        pago: pagoAtual,
+        pendente: pendenteAtual,
+        totalContas: contasAtual.length
+      });
 
-    // Calcular resumo do mês anterior
-    const totalAnterior = contasAnterior.reduce((sum, conta) => sum + conta.valor, 0);
-    const pagoAnterior = contasAnterior.filter(c => c.status === 'pago').reduce((sum, conta) => sum + conta.valor, 0);
-    const pendenteAnterior = contasAnterior.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
+      // Calcular resumo do mês anterior
+      const totalAnterior = contasAnterior.reduce((sum, conta) => sum + conta.valor, 0);
+      const pagoAnterior = contasAnterior.filter(c => c.status === 'pago').reduce((sum, conta) => sum + conta.valor, 0);
+      const pendenteAnterior = contasAnterior.filter(c => c.status === 'pendente').reduce((sum, conta) => sum + conta.valor, 0);
 
-    setResumoAnterior({
-      total: totalAnterior,
-      pago: pagoAnterior,
-      pendente: pendenteAnterior,
-      totalContas: contasAnterior.length
-    });
+      setResumoAnterior({
+        total: totalAnterior,
+        pago: pagoAnterior,
+        pendente: pendenteAnterior,
+        totalContas: contasAnterior.length
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const alternarStatus = async (id: string) => {
@@ -213,7 +219,21 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-4">
-              {contas.length > 0 ? (
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card p-4 rounded-lg border border-border animate-pulse">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 bg-muted rounded w-1/3"></div>
+                          <div className="h-3 bg-muted rounded w-1/4"></div>
+                        </div>
+                        <div className="h-6 bg-muted rounded w-20"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : contas.length > 0 ? (
                 contas.map(conta => (
                   <ContaCard
                     key={conta.id}

@@ -17,6 +17,7 @@ interface ContaParaGerar extends ContaFixa {
 
 const GeradorContasMensais = () => {
   const [contasFixas, setContasFixas] = useState<ContaParaGerar[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mesGeracao, setMesGeracao] = useState('');
   const { toast } = useToast();
 
@@ -30,28 +31,33 @@ const GeradorContasMensais = () => {
   }, []);
 
   const carregarContasFixas = async (mes: string) => {
-    const contasFixasBase = (await storage.getContasFixas()).filter(cf => cf.ativo);
-    
-    const contasParaGerar: ContaParaGerar[] = await Promise.all(
-      contasFixasBase.map(async conta => {
-        const jaGerada = await storage.jaGeradoNoMes(conta.id, mes);
-        let valorAjustado = conta.valorPadrao;
-        
-        // Se já foi gerada, buscar o valor da geração mensal
-        if (jaGerada) {
-          const valorGeracao = await storage.getValorGeracao(conta.id, mes);
-          valorAjustado = valorGeracao || conta.valorPadrao;
-        }
-        
-        return {
-          ...conta,
-          valorAjustado,
-          jaGerada
-        };
-      })
-    );
+    try {
+      setLoading(true);
+      const contasFixasBase = (await storage.getContasFixas()).filter(cf => cf.ativo);
+      
+      const contasParaGerar: ContaParaGerar[] = await Promise.all(
+        contasFixasBase.map(async conta => {
+          const jaGerada = await storage.jaGeradoNoMes(conta.id, mes);
+          let valorAjustado = conta.valorPadrao;
+          
+          // Se já foi gerada, buscar o valor da geração mensal
+          if (jaGerada) {
+            const valorGeracao = await storage.getValorGeracao(conta.id, mes);
+            valorAjustado = valorGeracao || conta.valorPadrao;
+          }
+          
+          return {
+            ...conta,
+            valorAjustado,
+            jaGerada
+          };
+        })
+      );
 
-    setContasFixas(contasParaGerar);
+      setContasFixas(contasParaGerar);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const atualizarValor = async (id: string, novoValor: number) => {
@@ -192,47 +198,64 @@ const GeradorContasMensais = () => {
             <CardTitle>Contas a Gerar</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {contasFixas.map(conta => (
-                <div key={conta.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-foreground">{conta.titulo}</h4>
-                      <Badge variant="outline" className="text-xs">
-                        {conta.categoria}
-                      </Badge>
-                      {conta.jaGerada && (
-                        <Badge className="text-xs bg-success text-success-foreground">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Gerada
+            {loading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 border border-border rounded-lg animate-pulse">
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded w-1/3"></div>
+                      <div className="h-3 bg-muted rounded w-1/4"></div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 bg-muted rounded w-32"></div>
+                      <div className="h-4 w-4 bg-muted rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {contasFixas.map(conta => (
+                  <div key={conta.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-foreground">{conta.titulo}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {conta.categoria}
                         </Badge>
-                      )}
+                        {conta.jaGerada && (
+                          <Badge className="text-xs bg-success text-success-foreground">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Gerada
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Vencimento: dia {conta.diaVencimento}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Vencimento: dia {conta.diaVencimento}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <Label htmlFor={`valor-${conta.id}`} className="text-xs text-muted-foreground">
-                        Valor
-                      </Label>
-                      <Input
-                        id={`valor-${conta.id}`}
-                        type="number"
-                        step="0.01"
-                        value={conta.valorAjustado}
-                        onChange={(e) => atualizarValor(conta.id, parseFloat(e.target.value) || 0)}
-                        className="w-32 text-right"
-                        
-                      />
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <Label htmlFor={`valor-${conta.id}`} className="text-xs text-muted-foreground">
+                          Valor
+                        </Label>
+                        <Input
+                          id={`valor-${conta.id}`}
+                          type="number"
+                          step="0.01"
+                          value={conta.valorAjustado}
+                          onChange={(e) => atualizarValor(conta.id, parseFloat(e.target.value) || 0)}
+                          className="w-32 text-right"
+                          
+                        />
+                      </div>
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
