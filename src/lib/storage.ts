@@ -288,5 +288,23 @@ export const storage = {
       console.error('Erro ao marcar como gerado:', error);
       throw error;
     }
+  },
+
+  atualizarValorGeracao: async (contaFixaId: string, mes: string, novoValor: number): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('geracoes_mensais')
+        .update({ valor: novoValor })
+        .eq('conta_fixa_id', contaFixaId)
+        .eq('mes', mes);
+      
+      if (error) {
+        console.error('Erro ao atualizar valor da geração:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar valor da geração:', error);
+      throw error;
+    }
   }
 };

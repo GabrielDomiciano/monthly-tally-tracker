@@ -43,10 +43,28 @@ const GeradorContasMensais = () => {
     setContasFixas(contasParaGerar);
   };
 
-  const atualizarValor = (id: string, novoValor: number) => {
+  const atualizarValor = async (id: string, novoValor: number) => {
     setContasFixas(prev => prev.map(conta => 
       conta.id === id ? { ...conta, valorAjustado: novoValor } : conta
     ));
+
+    // Se a conta já foi gerada, atualizar o valor na base de dados
+    const conta = contasFixas.find(c => c.id === id);
+    if (conta?.jaGerada) {
+      try {
+        await storage.atualizarValorGeracao(id, mesGeracao, novoValor);
+        toast({
+          title: "Valor atualizado",
+          description: `Valor de ${conta.titulo} foi atualizado para ${formatCurrency(novoValor)}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o valor",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const gerarContasDoMes = async () => {
@@ -196,7 +214,7 @@ const GeradorContasMensais = () => {
                         value={conta.valorAjustado}
                         onChange={(e) => atualizarValor(conta.id, parseFloat(e.target.value) || 0)}
                         className="w-32 text-right"
-                        disabled={conta.jaGerada}
+                        
                       />
                     </div>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
