@@ -203,6 +203,29 @@ const Dashboard = () => {
     }
   }, [mesSelecionado]);
 
+  // Adicionar listener para recarregar quando a página ganhar foco (útil quando alterar em outra aba)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (temDados) {
+        carregarDados();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && temDados) {
+        carregarDados();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [temDados]);
+
   const alternarStatus = async (id: string) => {
     const conta = contas.find(c => c.id === id);
     if (conta) {
