@@ -235,31 +235,36 @@ export const storage = {
         throw new Error(`Erro ao atualizar conta fixa: ${error.message}`);
       }
 
-      // Se o valor padrão foi alterado, atualizar as contas já geradas
-      if (updates.valorPadrao !== undefined) {
-        const tituloAtual = updates.titulo !== undefined ? updates.titulo : contaFixaAntes.titulo;
-        const categoriaAtual = updates.categoria !== undefined ? updates.categoria : contaFixaAntes.categoria;
+      // Atualizar as contas já geradas se qualquer campo relevante foi alterado
+      if (updates.valorPadrao !== undefined || updates.titulo !== undefined || updates.categoria !== undefined) {
+        // Usar os dados ANTES da alteração para encontrar as contas corretas
+        const updateContaData: any = {};
+        if (updates.titulo !== undefined) updateContaData.titulo = updates.titulo;
+        if (updates.categoria !== undefined) updateContaData.categoria = updates.categoria;
+        if (updates.valorPadrao !== undefined) updateContaData.valor = updates.valorPadrao;
 
         const { error: contasError } = await supabase
           .from('contas')
-          .update({ valor: updates.valorPadrao })
-          .eq('titulo', tituloAtual)
-          .eq('categoria', categoriaAtual);
+          .update(updateContaData)
+          .eq('titulo', contaFixaAntes.titulo)
+          .eq('categoria', contaFixaAntes.categoria);
 
         if (contasError) {
           console.error('Erro ao atualizar contas geradas:', contasError);
           // Não vamos lançar erro aqui para não interromper a atualização da conta fixa
         }
 
-        // Também atualizar na tabela geracoes_mensais
-        const { error: geracoesError } = await supabase
-          .from('geracoes_mensais')
-          .update({ valor: updates.valorPadrao })
-          .eq('conta_fixa_id', id);
+        // Também atualizar na tabela geracoes_mensais se o valor foi alterado
+        if (updates.valorPadrao !== undefined) {
+          const { error: geracoesError } = await supabase
+            .from('geracoes_mensais')
+            .update({ valor: updates.valorPadrao })
+            .eq('conta_fixa_id', id);
 
-        if (geracoesError) {
-          console.error('Erro ao atualizar gerações mensais:', geracoesError);
-          // Não vamos lançar erro aqui para não interromper a atualização da conta fixa
+          if (geracoesError) {
+            console.error('Erro ao atualizar gerações mensais:', geracoesError);
+            // Não vamos lançar erro aqui para não interromper a atualização da conta fixa
+          }
         }
       }
     } catch (error) {
