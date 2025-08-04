@@ -407,6 +407,7 @@ export const storage = {
       }
 
       // Atualizar o valor na tabela geracoes_mensais
+      console.log('Atualizando geracoes_mensais...');
       const { error: geracaoError } = await supabase
         .from('geracoes_mensais')
         .update({ valor: novoValor })
@@ -418,6 +419,7 @@ export const storage = {
         throw new Error(`Erro ao atualizar valor da geração: ${geracaoError.message}`);
       }
 
+      console.log('geracoes_mensais atualizada, buscando dados da conta fixa...');
       // Buscar os dados da conta fixa para encontrar a conta correspondente
       const { data: contaFixa, error: contaFixaError } = await supabase
         .from('contas_fixas')
@@ -430,23 +432,35 @@ export const storage = {
         throw new Error(`Erro ao buscar conta fixa: ${contaFixaError.message}`);
       }
 
+      console.log('Conta fixa encontrada:', contaFixa);
+
       // Calcular a data de vencimento para encontrar a conta correspondente
       const [ano, mesNum] = mes.split('-');
       const diaVencimento = Math.min(contaFixa.dia_vencimento, new Date(parseInt(ano), parseInt(mesNum), 0).getDate());
       const dataVencimento = `${ano}-${mesNum}-${diaVencimento.toString().padStart(2, '0')}`;
 
+      console.log('Data de vencimento calculada:', dataVencimento);
+      console.log('Procurando conta com:', {
+        titulo: contaFixa.titulo,
+        categoria: contaFixa.categoria,
+        data: dataVencimento
+      });
+
       // Atualizar a conta correspondente na tabela contas
-      const { error: contaError } = await supabase
+      const { data: contasAtualizadas, error: contaError } = await supabase
         .from('contas')
         .update({ valor: novoValor })
         .eq('titulo', contaFixa.titulo)
         .eq('categoria', contaFixa.categoria)
-        .eq('data', dataVencimento);
+        .eq('data', dataVencimento)
+        .select();
 
       if (contaError) {
         console.error('Erro ao atualizar conta:', contaError);
         throw new Error(`Erro ao atualizar conta: ${contaError.message}`);
       }
+
+      console.log('Contas atualizadas:', contasAtualizadas);
     } catch (error) {
       console.error('Erro ao atualizar valor da geração:', error);
       throw error;
