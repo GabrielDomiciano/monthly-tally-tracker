@@ -200,6 +200,7 @@ export const storage = {
   },
 
   updateContaFixa: async (id: string, updates: Partial<ContaFixa>, signal?: AbortSignal): Promise<void> => {
+    console.log('updateContaFixa chamada:', { id, updates });
     try {
       if (signal?.aborted) {
         throw new Error('Operação cancelada');
