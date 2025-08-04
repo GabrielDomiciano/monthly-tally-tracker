@@ -400,6 +400,7 @@ export const storage = {
   },
 
   atualizarValorGeracao: async (contaFixaId: string, mes: string, novoValor: number, signal?: AbortSignal): Promise<void> => {
+    console.log('atualizarValorGeracao chamada:', { contaFixaId, mes, novoValor });
     try {
       if (signal?.aborted) {
         throw new Error('Operação cancelada');
